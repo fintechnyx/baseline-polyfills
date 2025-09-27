@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baseline Polyfill Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 p-6 font-sans">
+  <h1 class="text-2xl font-bold mb-4">Polyfill Demo</h1>
+  <div id="results" class="space-y-4"></div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const target = parseInt(urlParams.get("target")||"2024",10);
+    const features = (urlParams.get("features")||"").split(",").map(f=>f.trim()).filter(Boolean);
+
+    // Inject functional polyfill script dynamically
+    const script = document.createElement("script");
+    script.src = `/polyfill.js?target=${target}&features=${features.join(",")}`;
+    document.head.appendChild(script);
+
+    const resultsDiv=document.getElementById("results");
+
+    function addCard(title,status,output){
+      const card=document.createElement("div");
+      card.className=`p-4 rounded-lg shadow ${status==="✅"?"bg-green-50 border border-green-400":"bg-red-50 border border-red-400"}`;
+      card.innerHTML=`<h2 class="font-semibold text-lg mb-1">${title} ${status}</h2>
+      <pre class="text-sm bg-white p-2 rounded overflow-x-auto">${output}</pre>`;
+      resultsDiv.appendChild(card);
+    }
+
+    script.onload=()=>{
+      features.forEach(f=>{
+        try{
+          switch(f){
+            case "fetch":
+              fetch("https://jsonplaceholder.typicode.com/todos/1")
+                .then(r=>r.json())
+                .then(d=>addCard("fetch()","✅",JSON.stringify(d,null,2)))
+                .catch(()=>addCard("fetch()","❌","Failed"));
+              break;
+            case "intl-segmenter":
+              const segmenter=new Intl.Segmenter();
+              const text="Hello world!";
+              const segments=[...segmenter.segment(text)].map(s=>s.segment).join("| ");
+              addCard("Intl.Segmenter","✅",segments);
+              break;
+            case "promise-any":
+              Promise.any([Promise.reject("fail1"),Promise.resolve("success!")])
+                .then(r=>addCard("Promise.any","✅",r))
+                .catch(e=>addCard("Promise.any","❌",e));
+              break;
+            case "array-flatmap":
+              const arr=[1,2,3];
+              addCard("Array.flatMap","✅",JSON.stringify(arr.flatMap(x=>[x,x])));
+              break;
+            case "object-from-entries":
+              addCard("Object.fromEntries","✅",JSON.stringify(Object.fromEntries([["a",1],["b",2]])));
+              break;
+            case "string-replaceall":
+              addCard("String.replaceAll","✅","foo bar foo".replaceAll("foo","baz"));
+              break;
+            case "promise-allsettled":
+              Promise.allSettled([Promise.resolve(1),Promise.reject(2)])
+                .then(r=>addCard("Promise.allSettled","✅",JSON.stringify(r,null,2)));
+              break;
+            case "globalThis":
+              addCard("globalThis","✅",JSON.stringify(globalThis!==undefined));
+              break;
+            case "weakref":
+              try{
+                const obj={x:1}; const ref=new WeakRef(obj);
+                addCard("WeakRef","✅",ref.deref()?JSON.stringify(ref.deref()):"undefined");
+              }catch(e){addCard("WeakRef","❌","Not supported");}
+              break;
+            case "urlsearchparams":
+              const params=new URLSearchParams("a=1&b=2");
+              addCard("URLSearchParams","✅",JSON.stringify(Object.fromEntries(params)));
+              break;
+          }
+        }catch(e){
+          addCard(f,"❌",e.message);
+        }
+      });
+    };
+  </script>
+</body>
+</html>

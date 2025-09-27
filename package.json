@@ -1,0 +1,12 @@
+{
+  "name": "baseline-polyfill-cdn",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "core-js": "^3.45.1",
+    "express": "^4.21.2"
+  }
+}
