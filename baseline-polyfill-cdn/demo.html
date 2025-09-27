@@ -1,0 +1,15 @@
+<h2>Testing Promise.any</h2>
+<pre id="promiseOutput"></pre>
+<script>
+const outputs = document.getElementById("promiseOutput");
+
+Promise.any([
+  Promise.reject("fail1"),
+  Promise.resolve("success!"),
+  Promise.reject("fail2")
+]).then(result => {
+  outputs.textContent = "Promise.any result: " + result;
+}).catch(err => {
+  outputs.textContent = "Promise.any failed: " + err;
+});
+</script>
