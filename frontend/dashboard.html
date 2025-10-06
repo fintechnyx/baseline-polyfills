@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baseline Polyfill CDN+</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <header class="flex justify-between items-center px-8 py-4 bg-white shadow">
+    <h1 class="text-2xl font-bold text-indigo-600">Baseline Polyfill CDN +</h1>
+    <button id="statusBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm">
+      Baseline 2024 • 0 feature(s)
+    </button>
+  </header>
+
+  <main class="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
+    <!-- Left: Config Panel -->
+    <section class="bg-white shadow rounded-xl p-6">
+      <h2 class="text-lg font-semibold mb-4">Configure</h2>
+      <label class="block mb-3">
+        <span class="font-medium">Target Baseline Year</span>
+        <input type="number" id="yearInput" value="2024" min="2024" max="2030"
+          class="mt-2 border rounded-md p-2 w-full" />
+      </label>
+
+      <h3 class="font-medium mt-4 mb-2">Select Features</h3>
+      <div id="featureList" class="grid grid-cols-2 gap-2 text-sm"></div>
+
+      <h3 class="font-medium mt-6 mb-2">Script Snippet</h3>
+      <div class="flex items-center gap-2">
+        <input id="snippetBox" readonly
+          class="flex-1 border rounded-md p-2 text-xs font-mono bg-gray-100" />
+        <button id="copyBtn" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">Copy</button>
+      </div>
+    </section>
+
+    <!-- Right: Live Preview -->
+    <section class="bg-white shadow rounded-xl p-6">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold">Live Preview</h2>
+        <span class="text-xs text-gray-500">Auto-refreshing demo</span>
+      </div>
+      <iframe id="demoFrame" src="/demo.html" class="w-full h-[420px] border rounded-lg"></iframe>
+    </section>
+  </main>
+
+  <script>
+    const features = [
+      "fetch", "intl-segmenter", "promise-any", "array-flatmap", "object-from-entries",
+      "string-replaceall", "promise-allsettled", "globalThis", "weakref", "urlsearchparams"
+    ];
+    const list = document.getElementById("featureList");
+    const yearInput = document.getElementById("yearInput");
+    const snippetBox = document.getElementById("snippetBox");
+    const demoFrame = document.getElementById("demoFrame");
+    const statusBtn = document.getElementById("statusBtn");
+    const copyBtn = document.getElementById("copyBtn");
+
+    // Render checkboxes
+    features.forEach(f => {
+      const label = document.createElement("label");
+      label.className = "flex items-center gap-2 border rounded-md px-2 py-1 cursor-pointer hover:bg-gray-50";
+      label.innerHTML = `<input type="checkbox" value="${f}" class="featureBox">${f}`;
+      list.appendChild(label);
+    });
+
+    const updateSnippet = () => {
+      const year = yearInput.value;
+      const selected = [...document.querySelectorAll(".featureBox:checked")].map(f => f.value);
+      const snippet = `<script src="http://localhost:3000/polyfill.js?target=${year}&features=${selected.join(",")}"><\/script>`;
+      snippetBox.value = snippet;
+      statusBtn.textContent = `Baseline ${year} • ${selected.length} feature(s)`;
+      // Refresh demo
+      demoFrame.src = `/demo.html?target=${year}&features=${selected.join(",")}`;
+    };
+
+    list.addEventListener("change", updateSnippet);
+    yearInput.addEventListener("input", updateSnippet);
+
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(snippetBox.value);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => (copyBtn.textContent = "Copy"), 1000);
+    });
+
+    updateSnippet();
+  </script>
+</body>
+</html>

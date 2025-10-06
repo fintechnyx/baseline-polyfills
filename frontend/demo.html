@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polyfill Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-50 p-6">
+  <div class="max-w-lg mx-auto bg-white rounded-xl shadow p-5">
+    <h1 class="text-xl font-bold text-indigo-600 mb-3">Live Polyfill Demo</h1>
+    <p id="info" class="text-gray-700 text-sm"></p>
+    <div id="result" class="mt-3 p-3 border rounded bg-gray-50 font-mono text-xs"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get("target") || "2024";
+    const features = (params.get("features") || "").split(",").filter(Boolean);
+    document.getElementById("info").innerHTML = `Target: <b>${target}</b><br>Features: <b>${features.length ? features.join(", ") : "(none)"}</b>`;
+
+    const polyfillScript = document.createElement("script");
+    polyfillScript.src = `/polyfill.js?target=${target}&features=${features.join(",")}`;
+    document.body.appendChild(polyfillScript);
+
+    function testFeatures() {
+      const results = [];
+      try {
+        if (window.fetch) results.push("✅ fetch available");
+        if (Promise.any) results.push("✅ Promise.any available");
+        if (Array.prototype.flatMap) results.push("✅ Array.flatMap available");
+        if (Object.fromEntries) results.push("✅ Object.fromEntries available");
+        if (String.prototype.replaceAll) results.push("✅ String.replaceAll available");
+      } catch (err) {
+        results.push("⚠️ Some features failed to test.");
+      }
+      document.getElementById("result").innerHTML = results.join("<br>") || "ℹ️ No features selected.";
+    }
+
+    setTimeout(testFeatures, 800);
+  </script>
+</body>
+</html>
