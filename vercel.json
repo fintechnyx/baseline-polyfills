@@ -1,11 +1,13 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.js", "use": "@vercel/node" },
-    { "src": "*.html", "use": "@vercel/static" }
+    { "src": "backend/index.js", "use": "@vercel/node" },
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.css", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/polyfill.js", "dest": "/index.js" },
+    { "src": "/polyfill.js", "dest": "/backend/index.js" },
+    { "src": "/demo", "dest": "/demo.html" },
     { "src": "/", "dest": "/dashboard.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
